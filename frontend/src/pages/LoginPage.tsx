@@ -17,8 +17,9 @@ export function LoginPage() {
   const [emailError, setEmailError] = useState<string | null>(null);
   const [passwordError, setPasswordError] = useState<string | null>(null);
   const [generalError, setGeneralError] = useState<string | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  function onSubmit(event: FormEvent) {
+  async function onSubmit(event: FormEvent) {
     event.preventDefault();
     setEmailError(null);
     setPasswordError(null);
@@ -38,8 +39,9 @@ export function LoginPage() {
 
     if (hasError) return;
 
+    setIsSubmitting(true);
     try {
-      const { user } = login(cleanEmail, password);
+      const { user } = await login(cleanEmail, password);
       navigate(destination(user.role, user.mustChangePassword), { replace: true });
     } catch (err) {
       const message = err instanceof Error ? err.message : "Could not sign in.";
@@ -52,6 +54,8 @@ export function LoginPage() {
       } else {
         setGeneralError(message);
       }
+    } finally {
+      setIsSubmitting(false);
     }
   }
 
@@ -78,6 +82,7 @@ export function LoginPage() {
               autoComplete="username"
               placeholder="e.g. admin@campus.local"
               value={email}
+              disabled={isSubmitting}
               onChange={(e) => {
                 setEmail(e.target.value);
                 if (emailError) setEmailError(null);
@@ -100,6 +105,7 @@ export function LoginPage() {
               type="password"
               autoComplete="current-password"
               value={password}
+              disabled={isSubmitting}
               onChange={(e) => {
                 setPassword(e.target.value);
                 if (passwordError) setPasswordError(null);
@@ -114,17 +120,19 @@ export function LoginPage() {
             ) : null}
           </div>
 
-          <button className="btn btn-primary" type="submit">
-            Continue
+          <button className="btn btn-primary" type="submit" disabled={isSubmitting}>
+            {isSubmitting ? "Signing in..." : "Continue"}
           </button>
         </form>
 
         <div className="hint-box">
-          Mock accounts for this design pass:
+          Seeded accounts for testing:
           <br />
           <strong>admin@campus.local</strong> / campus123
           <br />
           <strong>faculty@campus.local</strong> / temp123 (must change password)
+          <br />
+          <strong>student@campus.local</strong> / temp123 (must change password)
         </div>
       </div>
     </div>

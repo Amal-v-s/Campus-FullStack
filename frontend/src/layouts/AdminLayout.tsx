@@ -56,8 +56,8 @@ export function AdminLayout() {
               type="button"
               className="btn btn-ghost"
               style={{ height: 36, width: "auto" }}
-              onClick={() => {
-                logout();
+              onClick={async () => {
+                await logout();
                 navigate("/login");
               }}
             >

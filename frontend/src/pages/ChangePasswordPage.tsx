@@ -11,8 +11,9 @@ export function ChangePasswordPage() {
   const [currentPasswordError, setCurrentPasswordError] = useState<string | null>(null);
   const [newPasswordError, setNewPasswordError] = useState<string | null>(null);
   const [generalError, setGeneralError] = useState<string | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  function onSubmit(event: FormEvent) {
+  async function onSubmit(event: FormEvent) {
     event.preventDefault();
     setCurrentPasswordError(null);
     setNewPasswordError(null);
@@ -38,8 +39,9 @@ export function ChangePasswordPage() {
 
     if (hasError) return;
 
+    setIsSubmitting(true);
     try {
-      changePassword(currentPassword, newPassword);
+      await changePassword(currentPassword, newPassword);
       navigate(user?.role === "admin" ? "/admin" : "/coming-soon", {
         replace: true,
       });
@@ -54,6 +56,8 @@ export function ChangePasswordPage() {
       } else {
         setGeneralError(message);
       }
+    } finally {
+      setIsSubmitting(false);
     }
   }
 
@@ -82,6 +86,7 @@ export function ChangePasswordPage() {
               type="password"
               autoComplete="current-password"
               value={currentPassword}
+              disabled={isSubmitting}
               onChange={(e) => {
                 setCurrentPassword(e.target.value);
                 if (currentPasswordError) setCurrentPasswordError(null);
@@ -104,6 +109,7 @@ export function ChangePasswordPage() {
               type="password"
               autoComplete="new-password"
               value={newPassword}
+              disabled={isSubmitting}
               onChange={(e) => {
                 setNewPassword(e.target.value);
                 if (newPasswordError) setNewPasswordError(null);
@@ -118,8 +124,8 @@ export function ChangePasswordPage() {
             ) : null}
           </div>
 
-          <button className="btn btn-primary" type="submit">
-            Save password
+          <button className="btn btn-primary" type="submit" disabled={isSubmitting}>
+            {isSubmitting ? "Saving..." : "Save password"}
           </button>
         </form>
       </div>

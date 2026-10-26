@@ -1,12 +1,27 @@
 import type { ReactNode } from "react";
 import { Navigate, Route, Routes } from "react-router-dom";
+import type { SessionUser } from "./auth/types";
 import { useAuth } from "./auth/useAuth";
 import { AdminLayout } from "./layouts/AdminLayout";
 import { AdminDashboardPage } from "./pages/AdminDashboardPage";
 import { ChangePasswordPage } from "./pages/ChangePasswordPage";
 import { ComingSoonPage } from "./pages/ComingSoonPage";
 import { LoginPage } from "./pages/LoginPage";
-import type { SessionUser } from "./auth/types";
+
+function LoadingScreen() {
+  return (
+    <div className="auth-screen">
+      <div className="auth-card" style={{ textAlign: "center", padding: "40px 24px" }}>
+        <span className="glyph" aria-hidden="true" style={{ fontSize: 24, margin: "0 auto 12px" }}>
+          C
+        </span>
+        <p className="muted" style={{ fontSize: 14 }}>
+          Restoring session...
+        </p>
+      </div>
+    </div>
+  );
+}
 
 function RequireAuth({
   children,
@@ -15,7 +30,8 @@ function RequireAuth({
   children: ReactNode;
   allowPasswordChange?: boolean;
 }) {
-  const { user } = useAuth();
+  const { user, loading } = useAuth();
+  if (loading) return <LoadingScreen />;
   if (!user) return <Navigate to="/login" replace />;
   if (user.mustChangePassword && !allowPasswordChange) {
     return <Navigate to="/change-password" replace />;
@@ -24,7 +40,8 @@ function RequireAuth({
 }
 
 function RequireAdmin({ children }: { children: ReactNode }) {
-  const { user } = useAuth();
+  const { user, loading } = useAuth();
+  if (loading) return <LoadingScreen />;
   if (!user) return <Navigate to="/login" replace />;
   if (user.mustChangePassword) return <Navigate to="/change-password" replace />;
   if (user.role !== "admin") return <Navigate to="/coming-soon" replace />;
@@ -32,7 +49,8 @@ function RequireAdmin({ children }: { children: ReactNode }) {
 }
 
 function GuestOnly({ children }: { children: ReactNode }) {
-  const { user } = useAuth();
+  const { user, loading } = useAuth();
+  if (loading) return <LoadingScreen />;
   if (!user) return children;
   return <Navigate to={homeFor(user)} replace />;
 }

@@ -10,12 +10,12 @@ An academic management and RAG-powered AI assistant platform with role-based acc
 |---|---|---|---|
 | **Phase 0** | **Design System & Visual Shell** | Real, cohesive UI shell defining the visual language for the whole app: login, admin dashboard, force password change, and design tokens. Mock auth in memory. | **Completed** |
 | **Phase 1** | **App Bootstrap** | Runnable frontend and backend (`Express + TypeScript`), `/api/health`, and Vite `/api` proxy. | **Completed** |
-| **Phase 2** | **Users Table & Admin Seed** | MySQL `users` table migration, constraints, and idempotent admin seed. | Pending |
-| **Phase 3** | **Login API + JWT Cookie** | `POST /api/auth/login`, bcrypt hash comparison, httpOnly JWT cookie. | Pending |
-| **Phase 4** | **Wire Login UI to API** | Real sign-in via cookie, error message mapping, redirect to dashboard. | Pending |
-| **Phase 5** | **Change Password** | `POST /api/auth/change-password` endpoint + first-login UI integration. | Pending |
-| **Phase 6** | **Guards & /me Session** | Session restore on refresh, route guards for roles and mandatory password change. | Pending |
-| **Phase 7** | **Logout & Slice Verification** | `POST /api/auth/logout`, cookie invalidation, end-to-end slice verification. | Pending |
+| **Phase 2** | **Users Table & Admin Seed** | MySQL `users` table migration, constraints, and idempotent admin seed. | **Completed** |
+| **Phase 3** | **Login API + JWT Cookie** | `POST /api/auth/login`, bcrypt hash comparison, httpOnly JWT cookie. | **Completed** |
+| **Phase 4** | **Wire Login UI to API** | Real sign-in via cookie, error message mapping, redirect to dashboard. | **Completed** |
+| **Phase 5** | **Change Password** | `POST /api/auth/change-password` endpoint + first-login UI integration. | **Completed** |
+| **Phase 6** | **Guards & /me Session** | Session restore on refresh, route guards for roles and mandatory password change. | **Completed** |
+| **Phase 7** | **Logout & Slice Verification** | `POST /api/auth/logout`, cookie invalidation, end-to-end slice verification. | **Completed** |
 
 ---
 
@@ -65,19 +65,43 @@ An academic management and RAG-powered AI assistant platform with role-based acc
 
 ---
 
-## Mock Accounts for Phase 0
-
+## Seeded Accounts & Flow
+ 
 | Account | Email | Password | Role | Behavior |
 |---|---|---|---|---|
 | **Admin** | `admin@campus.local` | `campus123` | Admin | Direct access to `/admin` dashboard |
-| **Faculty** | `faculty@campus.local` | `temp123` | Faculty | Redirects to `/change-password` first, then `/coming-soon` |
-| **Student** | `student@campus.local` | `temp123` | Student | Redirects to `/change-password` first, then `/coming-soon` |
+| **Faculty** | `faculty@campus.local` | `temp123` | Faculty | First login requires password change (`/change-password`), then lands on `/coming-soon` |
+| **Student** | `student@campus.local` | `temp123` | Student | First login requires password change (`/change-password`), then lands on `/coming-soon` |
+
+---
+
+## Authentication API Endpoints
+
+* `POST /api/auth/login`: Authenticates credentials via bcrypt, issues `httpOnly` secure JWT cookie (`token`), returns session user.
+* `POST /api/auth/logout`: Clears the authentication cookie and ends session.
+* `GET /api/auth/me`: Validates session cookie and returns current authenticated user for page refresh persistence.
+* `POST /api/auth/change-password`: Validates current password, updates to new password (min 8 chars), resets `must_change_password: false`, and issues fresh token.
 
 ---
 
 ## Running Locally
 
-### Option A: Run Both Frontend & Backend Concurrently (Recommended)
+### 1. Start MySQL Database
+```bash
+docker compose up -d
+```
+*(Runs MySQL 8.0 on port 3307 mapped to container 3306)*
+
+### 2. Run Database Migrations & Seeds
+```bash
+cd backend
+npm run db:setup       # Runs Umzug migrations and seeds the Admin account
+npm run db:seed:demo  # Seeds demo Faculty and Student accounts
+npm test              # Executes full suite of backend auth API integration tests
+cd ..
+```
+
+### 3. Run Both Frontend & Backend Concurrently
 From the project root:
 ```bash
 npm install
@@ -87,14 +111,4 @@ npm run dev
 * **Backend**: `http://localhost:5000` (Express)
 * **API Health Check**: `http://localhost:5173/api/health` (via Vite proxy) or `http://localhost:5000/api/health`
 
-### Option B: Run Services Individually
-```bash
-# Terminal 1: Backend
-cd backend
-npm run dev
-
-# Terminal 2: Frontend
-cd frontend
-npm run dev
-```
 
