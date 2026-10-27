@@ -9,7 +9,7 @@ An academic management and RAG-powered AI assistant platform with role-based acc
 | Phase | Title | Scope & Objectives | Status |
 |---|---|---|---|
 | **Phase 0** | **Design System & Visual Shell** | Real, cohesive UI shell defining the visual language for the whole app: login, admin dashboard, force password change, and design tokens. Mock auth in memory. | **Completed** |
-| **Phase 1** | **App Bootstrap** | Runnable frontend and backend (`Express + TypeScript`), `/api/health`, and Vite `/api` proxy. | **Completed** |
+| **Phase 1** | **App Bootstrap** | Runnable JavaScript frontend and backend (`React + Express`), `/api/health`, and Vite `/api` proxy. | **Completed** |
 | **Phase 2** | **Users Table & Admin Seed** | MySQL `users` table migration, constraints, and idempotent admin seed. | **Completed** |
 | **Phase 3** | **Login API + JWT Cookie** | `POST /api/auth/login`, bcrypt hash comparison, httpOnly JWT cookie. | **Completed** |
 | **Phase 4** | **Wire Login UI to API** | Real sign-in via cookie, error message mapping, redirect to dashboard. | **Completed** |
@@ -85,6 +85,19 @@ An academic management and RAG-powered AI assistant platform with role-based acc
 ---
 
 ## Running Locally
+
+### CORS configuration
+The API allows credentialed browser requests from `CLIENT_ORIGINS`, a comma-separated
+list of exact frontend origins (scheme, host, and port). For example:
+
+```env
+CLIENT_ORIGINS=http://localhost:5173,https://campus.example.edu
+```
+
+If `CLIENT_ORIGINS` is unset, the backend uses the single `CLIENT_ORIGIN` value;
+the local default is `http://localhost:5173`. Requests with other browser origins
+do not receive CORS permission. Keep the frontend origin list specific and do not
+use `*` with credentialed cookies.
 
 ### 1. Start MySQL Database
 ```bash
